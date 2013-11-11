@@ -20,7 +20,12 @@ Installation
  * Before installing, create a .env file in the root directory, and set the following config variables:
 
 		MONGODB_URL=mongodb://your-mongo-url
-   		REDIS_URL=redis://your-redis-url
+		REDIS_URL=redis://your-redis-url
+		BASE_URL=localhost
+		COOKIE_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+		TWITTER_CONSUMER_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+		TWITTER_CONSUMER_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+		DISQUS_SECRET_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
  * Create a [virtualenv](https://github.com/pypa/virtualenv), activate it, and run 
 
@@ -31,4 +36,4 @@ Installation
  		foreman start
 
  * Site should be viewable at http://0.0.0.0:5000
-
+ * Optionally launch with [localtunnel](http://localtunnel.me/) for working twitter API
