@@ -31,14 +31,10 @@ class EmailSettings(app.basic.BaseHandler):
   def post(self):
     next_page = self.get_argument('next', '')
     next_page += "&finished=true"
-    close_popup = self.get_argument('close_popup', '')
     email = self.get_argument('email', '')
     subscribe_to = self.get_argument('subscribe_to', '')
     error = ''
-    status = ''
     slug = ''
-    if close_popup != '':
-      status = 'close_popup'
 
     # get the current user's email value
     user = userdb.get_user_by_screen_name(self.current_user)
