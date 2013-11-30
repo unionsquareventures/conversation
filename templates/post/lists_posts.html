@@ -48,7 +48,7 @@
               <div class="excerpt">{% raw p['body_truncated'] %}</div>
               <div class="meta">
                 <a href="/posts/{{ p['slug'] }}/upvote" class="votes-count ajax_upvote_link upvote-button">
-                  <span class="value">{{ p['votes'] }} vote{{ 's' if p['votes'] != 1 else '' }}</span>
+                  <span class="value">{{ p['votes'] }} bump{{ 's' if p['votes'] != 1 else '' }}</span>
                 </a>
                 <a href="/posts/{{ p['slug'] }}" ><span class="glyphicon glyphicon-comment" style="margin: 0;"></span></a> 
                 <a class="dsq-comment-count" data-disqus-url="{{ settings.get('base_url') }}/posts/{{ str(p['slug']) }}" data-disqus-identifier="{{ str(p['_id']) }}" href="/posts/{{ p['slug'] }}">{{ p['comment_count'] }} comment{{ 's' if p['comment_count'] != 1 else '' }}</a>
@@ -88,7 +88,7 @@
             <a href="https://twitter.com/share" class="twitter-share-button" data-url="/posts/{{ new_post['slug'] }}" data-text="{{ new_post['title'] }}" data-via="usvcommunity" data-size="large" data-count="none">Tweet</a>
             <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
           </p>
-          <p>To start, it's on the "NEWEST" page. As it gathers votes and comments, it'll move to the "HOT" page and work its way up.</p>
+          <p>To start, it's on the "NEWEST" page. As it gathers bumps and comments, it'll move to the "HOT" page and work its way up.</p>
           <p>In the meantime, check out what else is new and give some love...</p>
         </div>
       {% end %}

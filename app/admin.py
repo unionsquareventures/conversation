@@ -2,7 +2,6 @@ import app.basic
 import tornado.web
 import settings
 import datetime
-import logging
 
 from lib import companiesdb
 from lib import hackpad
@@ -230,13 +229,13 @@ class ReCalculateScores(app.basic.BaseHandler):
     grace_period = 6.0
     #comments_multiplier = float(self.get_argument('comments_multiplier', 3.0))
     comments_multiplier = 3.0
-    #votes_multiplier = float(self.get_argument('votes_multiplier', 1.0))
-    votes_multiplier = 1.0
-    #min_votes = float(self.get_argument('min_votes', 2))
-    min_votes = 2
+    #bumps_multiplier = float(self.get_argument('bumps_multiplier', 1.0))
+    bumps_multiplier = 1.0
+    #min_bumps = float(self.get_argument('min_bumps', 2))
+    min_bumps = 2
 
     # get all the posts that have at least the 'min vote threshold'
-    posts = postsdb.get_posts_with_min_votes(min_votes)
+    posts = postsdb.get_posts_with_min_bumps(min_bumps)
 
     data = []
     for post in posts:
@@ -253,8 +252,8 @@ class ReCalculateScores(app.basic.BaseHandler):
       if hours_elapsed > 18:
         time_penalty = time_penalty * 2
 
-      # get our base score from downvotes
-      base_score = post['downvotes'] * -1
+      # get our base score from downbumps
+      base_score = post['downbumps'] * -1
 
       # determine if we should assign a staff bonus or not
       if post['user']['username'] in settings.get('staff'):
@@ -262,19 +261,19 @@ class ReCalculateScores(app.basic.BaseHandler):
       else:
         staff_bonus = 0
 
-      # determine how to weight votes
-      votes_base_score = 0
-      if post['votes'] == 1 and post['comment_count'] > 2:
-        votes_base_score = -2
-      if post['votes'] > 8 and post['comment_count'] == 0:
-        votes_base_score = -2
+      # determine how to weight bumps
+      bumps_base_score = 0
+      if post['bumps'] == 1 and post['comment_count'] > 2:
+        bumps_base_score = -2
+      if post['bumps'] > 8 and post['comment_count'] == 0:
+        bumps_base_score = -2
 
       scores = {}
       # now actually calculate the score
       total_score = base_score
       
-      scores['votes'] = (votes_base_score + post['votes'] * votes_multiplier)
-      total_score += scores['votes']
+      scores['bumps'] = (bumps_base_score + post['bumps'] * bumps_multiplier)
+      total_score += scores['bumps']
       
       scores['comments'] = (post['comment_count'] * comments_multiplier)
       total_score += scores['comments']
@@ -294,7 +293,7 @@ class ReCalculateScores(app.basic.BaseHandler):
         'slug': post['slug'],
         'date_created': post['date_created'],
         'hours_elapsed': hours_elapsed,
-        'votes': post['votes'],
+        'bumps': post['bumps'],
         'comment_count': post['comment_count'],
         'staff_bonus': staff_bonus,
         'time_penalty': time_penalty,
@@ -304,7 +303,7 @@ class ReCalculateScores(app.basic.BaseHandler):
   
     data = sorted(data, key=lambda k: k['total_score'], reverse=True)
 
-    self.render('admin/recalc_scores.html', data=data, staff_bonus=staff_bonus, time_penalty_multiplier=time_penalty_multiplier, grace_period=grace_period, comments_multiplier=comments_multiplier, votes_multiplier=votes_multiplier, min_votes=min_votes)
+    self.render('admin/recalc_scores.html', data=data, staff_bonus=staff_bonus, time_penalty_multiplier=time_penalty_multiplier, grace_period=grace_period, comments_multiplier=comments_multiplier, bumps_multiplier=bumps_multiplier, min_bumps=min_bumps)
 
 ###########################
 ### Remove user from blacklist

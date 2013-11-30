@@ -1,6 +1,6 @@
 There are a number of ways that a user can view a list of 'shares' in the system.
 
-1. Hot - Currently calculated via a cron job run every 5 minutes. Meant to order shares by a combination of time, votes, and active conversation.
+1. Hot - Currently calculated via a cron job run every 5 minutes. Meant to order shares by a combination of time, bumps, and active conversation.
 
 Normal users can only have one item per page appear in the 'hot' list, while 'staff' are not limited to the same restriction. Staff also get a small bonus bump for each share (making their shares more likely to be in the 'hot' list than others).
 
