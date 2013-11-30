@@ -140,6 +140,7 @@
 
           </div>
 
+          {% set tmp = post['voted_users'].reverse() %}
           {% for user in post['voted_users'] %}
             <hr />
             <p>
