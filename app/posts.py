@@ -145,7 +145,7 @@ class ListPosts(app.basic.BaseHandler):
       post['date_deleted'] = datetime.now()
 
     bypass_dup_check = self.get_argument('bypass_dup_check', '')
-    posts = []
+    posts = postsdb.get_posts_by_url(post['url'])
 
     # make sure user isn't blacklisted
     if not self.is_blacklisted(self.current_user):
@@ -168,7 +168,7 @@ class ListPosts(app.basic.BaseHandler):
           long_url = bitly.expand_url(post['url'].replace('http://bitly.com','').replace('http://bit.ly',''))
         post['domain'] = urlparse(long_url).netloc
 
-      if len(posts) == 0 or bypass_dup_check != '':
+      if not posts or bypass_dup_check != '':
         # Handle tags
         post['tags'] = [t.strip().lower() for t in post['tags']]
         post['tags'] = [t for t in post['tags'] if t]

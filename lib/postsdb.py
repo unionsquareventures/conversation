@@ -114,6 +114,9 @@ def get_latest_staff_posts_by_tag(tag, limit=10):
   staff = settings.get('staff')
   return list(db.post.find({'user.username': {'$in': staff}, 'tags':tag}, sort=[('date_featured', pymongo.DESCENDING)]).limit(limit))
 
+def get_posts_by_url(url):
+  return list(db.post.find({'url':url}))
+
 def get_posts_by_normalized_url(normalized_url, limit):
   return list(db.post.find({'normalized_url':normalized_url, 'deleted':False}, sort=[('_id', pymongo.DESCENDING)]).limit(limit))
 
