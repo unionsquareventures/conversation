@@ -15,8 +15,11 @@ class Search(app.basic.BaseHandler):
 
     # get posts based on query
     posts = postsdb.get_posts_by_query(query, per_page, page)
-    total_count = postsdb.get_post_count_by_query(query)
-
+    if isinstance(posts, dict):
+        total_count = posts['nbHits']
+        posts = posts['hits']
+    else:
+        total_count = postsdb.get_post_count_by_query(query)
     self.render('search/search_results.html', posts=posts, total_count=total_count, page=page, per_page=per_page, query=query)
 
 #####################

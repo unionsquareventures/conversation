@@ -5,6 +5,7 @@ import settings
 from datetime import datetime
 from mongo import db
 from slugify import slugify
+from algoliasearch import algoliasearch
 
 """
 {
@@ -39,6 +40,33 @@ from slugify import slugify
 """
 
 ###########################
+### ALGOLIA SEARCH
+###########################
+def get_algoliasearch_client():
+  algoliasearch_application_id = settings.get('algoliasearch_application_id')
+  if algoliasearch_application_id:
+    return algoliasearch.Client(algoliasearch_application_id, settings.get('algoliasearch_api_key')).initIndex(settings.get('algoliasearch_index_name'))
+  return None
+
+def algolia_add(post):
+  algolia = get_algoliasearch_client()
+  if algolia is not None:
+    algolia.addObject(post, post['slug'])
+
+def algolia_partial_update(slug, obj):
+  obj['objectID'] = slug
+  algolia = get_algoliasearch_client()
+  if algolia is not None:
+    algolia.partialUpdateObject(obj)
+
+def init_algolia_settings():
+  algolia = get_algoliasearch_client()
+  if algolia is not None:
+    algolia.setSettings({ 'attributesToIndex': ['title', 'body_text'], 'attributesToHighlight': ['title', 'body_truncated'], 'customRanking': ['desc(sort_score)'] })
+
+init_algolia_settings()
+
+###########################
 ### GET A SPECIFIC POST
 ###########################
 def get_post_by_slug(slug):
@@ -51,8 +79,12 @@ def get_posts_by_bumps(screen_name, per_page, page):
   return list(db.post.find({'voted_users.screen_name':screen_name, 'user.screen_name':{'$ne':screen_name}}, sort=[('date_created', pymongo.DESCENDING)]).skip((page-1)*per_page).limit(per_page))
 
 def get_posts_by_query(query, per_page=10, page=1):
-  query_regex = re.compile('%s[\s$]' % query, re.I)
-  return list(db.post.find({'$or':[{'title':query_regex}, {'body_raw':query_regex}]}, sort=[('date_created', pymongo.DESCENDING)]).skip((page-1)*per_page).limit(per_page))
+  algolia = get_algoliasearch_client()
+  if algolia is not None:
+    return algolia.search(query, { 'hitsPerPage': per_page, 'page': (page - 1) })
+  else:
+    query_regex = re.compile('%s[\s$]' % query, re.I)
+    return list(db.post.find({'$or':[{'title':query_regex}, {'body_raw':query_regex}]}, sort=[('date_created', pymongo.DESCENDING)]).skip((page-1)*per_page).limit(per_page))
 
 def get_posts_by_tag(tag, per_page=10, page=1):
   return list(db.post.find({'deleted': { "$ne": True }, 'tags':tag}, sort=[('date_created', pymongo.DESCENDING)]).skip((page-1)*per_page).limit(per_page))
@@ -130,9 +162,11 @@ def remove_subscriber_from_post(slug, email):
   return db.post.update({'slug':slug}, {'$pull': {'subscribed': email}})
 
 def save_post(post):
+  algolia_add(post)
   return db.post.update({'_id':post['_id']}, post)
 
 def update_post_score(slug, score):
+  algolia_partial_update(slug, { 'sort_score': score })
   return db.post.update({'slug':slug}, {'$set':{'sort_score': score}})
 
 def delete_all_posts_by_user(screen_name):
@@ -141,6 +175,7 @@ def delete_all_posts_by_user(screen_name):
 ###########################
 ### ADD A NEW POST
 ###########################
+
 def insert_post(post):
   slug = slugify(post['title'])
   slug_count = len(list(db.post.find({'slug':slug})))
@@ -151,5 +186,5 @@ def insert_post(post):
   if 'subscribed' not in post.keys():
     post['subscribed'] = []
   db.post.update({'url':post['slug'], 'user.screen_name':post['user']['screen_name']}, post, upsert=True)
+  algolia_add(post)
   return post['slug']
-

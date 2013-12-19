@@ -1346,6 +1346,13 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .featured-feed .excerpt, .search-feed .excerpt {
     display:none;
 }
+.featured-feed .thumbnail, .search-feed em {
+    font-style: normal;
+    font-weight: bold;
+}
+.featured-feed .thumbnail, .search-feed .title em {
+    border-bottom: 1px solid black;
+}
 .more-link {
     text-decoration:none;
     font-size:0.85em;

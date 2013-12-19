@@ -136,11 +136,13 @@
 
           </div>
           <div class="col-sm-6">
-            <div class="footer-search-container">
-              <form action="/search" method="get">
-                <input type="search" placeholder="Search" name="query" style="width:300px; margin: 0 auto" />
-              </form>
-            </div>
+            {% if globals().get('__name__') != 'search/search_results_html' or not settings.get('algoliasearch_application_id') %}
+              <div class="footer-search-container">
+                <form action="/search" method="get">
+                  <input type="search" placeholder="Search" name="query" style="width:300px; margin: 0 auto" />
+                </form>
+              </div>
+            {% end %}
           </div>
           <div class="col-sm-3" style="text-align:right">
 

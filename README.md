@@ -13,6 +13,7 @@ Built with:
  * [Sendgrid](http://sendgrid.com/docs/API_Reference/)
  * [Google API](https://developers.google.com/url-shortener/v1/getting_started)
  * [Bitly](https://github.com/bitly/bitly-api-python)
+ * [Algolia Search](http://www.algolia.com)
 
 Configuration
 -------------
@@ -31,6 +32,10 @@ General app settings are controlled via the settings.py file. You will need to p
 * 'hackpad_domain':'',
 * 'google_api_key': '',
 * 'bitly_access_token': '',
+* 'algoliasearch_application_id': '',
+* 'algoliasearch_api_key': '',
+* 'algoliasearch_api_key_public': '',
+* 'algoliasearch_index_name': '',
 
 Installation
 ------------
