@@ -61,6 +61,12 @@ default_options = {
   # bitly access token
   'bitly_access_token': '',
 
+  # algolia details
+  'algoliasearch_application_id': '',
+  'algoliasearch_api_key': '',
+  'algoliasearch_api_key_public': '',
+  'algoliasearch_index_name': '',
+
   # other control variables
   'tinymce_valid_elements': '',
   'post_char_limit': 1000,

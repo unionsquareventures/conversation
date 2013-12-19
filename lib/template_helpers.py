@@ -16,6 +16,11 @@ def twitter_avatar_size(url, size):
 
 # Adapted from http://bit.ly/17wpDuh
 def pretty_date(d):
+  if isinstance(d, int): # if it's an integer, it's a timestamp
+    try:
+      d = datetime.datetime.fromtimestamp(d)
+    except ValueError:
+      d = datetime.datetime.fromtimestamp(d / 1000)
   diff = datetime.datetime.now() - d
   s = diff.seconds
   if diff.days != 0:
