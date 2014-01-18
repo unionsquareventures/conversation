@@ -4,14 +4,51 @@ import settings
 import datetime
 import logging
 import json
+import requests
 
 from lib import companiesdb
 from lib import hackpad
 from lib import postsdb
 from lib import userdb
 from lib import disqus
+from lib import emailsdb
 from disqusapi import DisqusAPI
 
+############################
+# ADMIN NEWSLETTER
+# /admin/newsletter
+############################
+class DailyEmail(app.basic.BaseHandler):
+  def get(self):
+    posts = postsdb.get_hot_posts()
+    has_previewed = self.get_argument("preview", False)
+    recipients = userdb.get_newsletter_recipients()
+    #on this page, you'll choose from hot posts and POST the selections to the email form`
+    self.render('admin/daily_email.html', posts=posts, slugs=None, email=None, has_previewed=has_previewed, has_sent=False, recipients=recipients)
+  
+  def post(self):
+    if not self.current_user_can('send_daily_email'):
+      raise tornado.web.HTTPError(401)
+    
+    slugs = self.request.arguments['slugs']
+    if not slugs:
+      return self.write("No posts selected")
+    
+    email = emailsdb.construct_daily_email(slugs)
+    recipients = userdb.get_newsletter_recipients()
+   
+    if self.get_argument('preview', '') == "true":
+      self.render('admin/daily_email.html', slugs=slugs, posts=None, email=email, has_previewed=True, has_sent=False, recipients=recipients)
+    else:
+      emailsdb.send_daily_email(email)
+      self.redirect('/admin/daily_email/history')
+
+class DailyEmailHistory(app.basic.BaseHandler):
+  def get(self):
+    history = emailsdb.get_daily_email_log()
+    self.render('admin/daily_email_history.html', history=history)
+    
+    
 ###########################
 ### ADMIN COMPANY
 ### /admin/company

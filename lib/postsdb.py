@@ -35,6 +35,8 @@ from algoliasearch import algoliasearch
   'disqus_thread_id_str': '',
   'sort_score': 0.0,
   'downvotes': 0,
+  'super_upvotes': 0,
+  'super_downvotes': 0,
   'subscribed':[]
 }
 """
@@ -107,6 +109,9 @@ def get_hot_posts(per_page=50, page=1):
 
 def get_sad_posts(per_page=50, page=1):
   return list(db.post.find({'date_created':{'$gt': datetime.strptime("10/12/13", "%m/%d/%y")}, 'votes':1, 'comment_count':0, 'deleted': { "$ne": True } , 'featured': False}, sort=[('date_created', pymongo.DESCENDING)]).skip((page-1)*per_page).limit(per_page))
+  
+def get_daily_posts():
+  return list(db.post.find({'date_created':{'$gt': datetime.strptime("10/12/13", "%m/%d/%y")}, 'deleted': { "$ne": True }}, sort=[('date_created', pymongo.DESCENDING)]).limit(2))
 
 def get_deleted_posts(per_page=50, page=1):
   return list(db.post.find({'deleted':True}, sort=[('date_deleted', pymongo.DESCENDING)]).skip((page-1)*per_page).limit(per_page))
@@ -150,7 +155,7 @@ def get_posts_by_normalized_url(normalized_url, limit):
   return list(db.post.find({'normalized_url':normalized_url, 'deleted': { "$ne": True }}, sort=[('_id', pymongo.DESCENDING)]).limit(limit))
 
 def get_posts_with_min_votes(min_votes):
-  return list(db.post.find({'deleted': { "$ne": True }, 'votes':{'$gte':min_votes}}, {'slug':1, 'date_created':1, 'downvotes':1, 'user.username':1, 'comment_count':1, 'votes':1, 'title':1}, sort=[('date_created', pymongo.DESCENDING)]))
+  return list(db.post.find({'deleted': { "$ne": True }, 'votes':{'$gte':min_votes}}, sort=[('date_created', pymongo.DESCENDING)]))
 
 ###########################
 ### UPDATE POST DETAIL
@@ -188,3 +193,83 @@ def insert_post(post):
   db.post.update({'url':post['slug'], 'user.screen_name':post['user']['screen_name']}, post, upsert=True)
   algolia_add(post)
   return post['slug']
+
+###########################
+### SORT ALL POSTS
+### RUN BY HEROKU SCHEDULER EVERY 5 MIN
+### VIA SCRIPTS/SORT_POSTS.PY
+###########################
+def sort_posts(slug="all"):
+  # set our config values up
+  staff_bonus = -3
+  time_penalty_multiplier = 2.0
+  grace_period = 18.0
+  comments_multiplier = 3.0
+  votes_multiplier = 1.0
+  super_upvotes_multiplier = 3.0
+  super_downvotes_multiplier = 3.0
+  min_votes = 2
+
+  # get posts to score
+  if slug == "all":
+    posts = get_posts_with_min_votes(min_votes)
+  else:
+    posts = [get_post_by_slug(slug)]
+
+  data = []
+  for post in posts:
+    # determine how many hours have elapsed since this post was created
+    tdelta = datetime.now() - post['date_created']
+    hours_elapsed = tdelta.seconds/3600 + tdelta.days*24
+
+    # determine the penalty for time decay
+    time_penalty = 0
+    if hours_elapsed > grace_period:
+      time_penalty = hours_elapsed - grace_period
+    if hours_elapsed > 12:
+      time_penalty = time_penalty * 1.5
+    if hours_elapsed > 18:
+      time_penalty = time_penalty * 2
+
+    # determine if we should assign a staff bonus or not
+    if post['user']['username'] in settings.get('staff'):
+      staff_bonus = staff_bonus
+    else:
+      staff_bonus = 0
+
+    # determine how to weight votes
+    votes_base_score = 0
+    if post['votes'] == 1 and post['comment_count'] > 2:
+      votes_base_score = -2
+    if post['votes'] > 8 and post['comment_count'] == 0:
+      votes_base_score = -2
+
+    if 'super_upvotes' in post.keys():
+      super_upvotes = post['super_upvotes']
+    else:
+      super_upvotes = 0
+    #super_upvotes = post.get('super_upvotes', 0)
+    super_downvotes = post.get('super_downvotes', 0)
+
+    # calculate the sub-scores
+    scores = {}
+    scores['votes'] = (votes_base_score + post['votes'] * votes_multiplier)
+    scores['super_upvotes'] = (super_upvotes * super_upvotes_multiplier)
+    scores['super_downvotes'] = (super_downvotes * super_downvotes_multiplier * -1)
+    scores['comments'] = (post['comment_count'] * comments_multiplier)
+    scores['time'] = (time_penalty * time_penalty_multiplier * -1)
+
+    # add up the scores
+    total_score = 0
+    total_score += staff_bonus
+    for score in scores:
+      total_score += scores[score]
+
+    # and save the new score
+    post['scores'] = scores
+    update_post_score(post['slug'], total_score, scores)
+    print post['slug']
+    print "-- %s" % total_score
+    print "---- %s" % json.dumps(scores, indent=4)
+
+  print "All posts sorted!"

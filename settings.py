@@ -37,11 +37,11 @@ default_options = {
   
   'project_root': os.path.abspath(os.path.join(os.path.dirname(__file__))),
 
-  # twiter details (using knowabout.it keys for testing)
+  # twiter details
   'twitter_consumer_key' : '',
   'twitter_consumer_secret' : '',
 
-  # disqus details (using greentile keys for testing)
+  # disqus details
   'disqus_public_key': '',
   'disqus_secret_key': '',
   'disqus_short_code': '',
@@ -74,31 +74,19 @@ default_options = {
   'read_only' : False,
   'max_simultaneous_connections' : 10,
   'hot_post_set_count': 200,
-  'staff':[
-    "_zachary",
-    "alexandermpease",
-    "bwats",
-    "aweissman",
-    "fredwilson",
-    "albertwenger",
-    "bradusv",
-    "nickgrossman",
-    "br_ttany",
-    "johnbuttrick",
-    "christinacaci",
-    "garychou",
-  ],
+  'staff':[ 'nickgrossman'],
 
   # define the various roles and what capabilities they support
   'staff_capabilities': [
+    'send_daily_email',
     'see_admin_link',
     'delete_users',
     'delete_posts',
     'post_rich_media',
     'feature_posts',
     'edit_posts',
-    'upvote_multiple_times',
-    'super_upvote_posts',
+    'super_upvote',
+    'super_downvote',
     'downvote_posts',
     'manage_disqus'
   ],
