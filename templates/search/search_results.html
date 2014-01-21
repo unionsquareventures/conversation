@@ -10,6 +10,8 @@
         var idx = new AlgoliaSearch('{{ settings.get("algoliasearch_application_id") }}', '{{ settings.get("algoliasearch_api_key_public") }}').initIndex('{{ settings.get("algoliasearch_index_name") }}');
         var $hits = $('#main ul.feed');
         var $searchField = $('#instant-search-field');
+        var $pagination = $('#pagination');
+        var page = 0;
 
         function searchCallback(success, content) {
           if (!success) {
@@ -47,17 +49,41 @@
               '</li>';
           }
           $hits.html(html);
+
+          var pagination = '';
+          for (var p = 0; p < content.nbPages; ++p) {
+            if (p == content.page) {
+              pagination += '<li>' + (p + 1) + '</li>';
+            } else {
+              pagination += '<li>' +
+                '<a href="javascript:gotoPage(' + (p + 1) + ')">' + (p + 1) + '</a>' +
+                '</li>';
+            }
+          }
+          $pagination.html(pagination);
+
           $('#main ul.feed .time').timeago();
           $('#search-total-count').text(content.nbHits + ' result' + (content.nbHits != 1 ? 's' : ''));
           $('#search-term').text(content.query || '*');
+        }
+
+        function search() {
+          idx.search($searchField.val().trim(), searchCallback, { hitsPerPage: {{ per_page }}, page: page });
+        }
+
+        window.gotoPage = function(p) {
+          page = p - 1;
+          search();
+          $('html, body').scrollTop(0);
         } 
 
         $searchField.keyup(function(e) {
+          page = 0;
           switch (e.keyCode) {
             case 27: searchField.val(''); break;
             default: break;
           }
-          idx.search($searchField.val().trim(), searchCallback);
+          search();
         }).focus();
       });
     </script>
@@ -97,6 +123,23 @@
               </div>
             </div>
           </li>
+        {% end %}
+      </ul>
+
+      <ul id="pagination">
+        {% for p in range(1, nb_pages + 1) %}
+          {% if page != p %}
+          <li>
+            {% if settings.get('algoliasearch_application_id') %}
+            <a href="javascript:gotoPage({{ p }})">{{ p }}</a>
+            {% else %}
+            <a href="?query={{ query }}&amp;page={{ p }}">{{ p }}</a>
+            {% end %}
+          </li>
+          {% else %}
+          <li class="active"><span>{{ p }}</span></li>
+          {% end %}
+        </li>
         {% end %}
       </ul>
     </section>

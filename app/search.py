@@ -1,5 +1,6 @@
 import app.basic
 import urllib
+import math
 
 from lib import postsdb
 
@@ -20,7 +21,8 @@ class Search(app.basic.BaseHandler):
         posts = posts['hits']
     else:
         total_count = postsdb.get_post_count_by_query(query)
-    self.render('search/search_results.html', posts=posts, total_count=total_count, page=page, per_page=per_page, query=query)
+    self.render('search/search_results.html', posts=posts, total_count=total_count, page=page, \
+        per_page=per_page, query=query, nb_pages=int(math.ceil(float(total_count) / per_page)))
 
 #####################
 ### VIEW POSTS BY TAG
