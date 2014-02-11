@@ -59,7 +59,7 @@
           {% end %}
         {% end %}
       </div>
-      <a class="dsq-comment-count comment-count" data-disqus-identifier="{{ str(p['_id']) }}" href="/posts/{{ p['slug'] }}">{{ p['comment_count'] }} {{ 'comment' if p['comment_count'] == 1 else 'comments' }}</a>
+      <a class="dsq-comment-count comment-count" data-disqus-identifier="{{ str(p['_id']) }}" href="/posts/{{ p['slug'] }}">{{ p['comment_count'] }}</a>
       {% if p['body_html'] and p['body_html'].strip() != ""  %}
       <a class="expand" data-status="closed" href="/posts/{{ p['slug'] }}"><span class="glyphicon glyphicon-collapse-down"></span> open</a>
       {% end %}
