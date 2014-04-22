@@ -146,7 +146,8 @@ class ListPosts(app.basic.BaseHandler):
       fresh_posts = postsdb.get_fresh_posts(hours=1, quantity=1)
       
       hot_posts = postsdb.get_hot_posts_by_day(day)
-      hot_posts.pop(-1)
+      if fresh_posts:
+        hot_posts.pop(-1)
 
       posts = fresh_posts + hot_posts
     else:
